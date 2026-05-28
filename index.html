@@ -7,7 +7,11 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            /* back.png ahora es el fondo de toda la pantalla */
+            background-image: url('back.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -18,7 +22,8 @@
         }
 
         h1 {
-            color: #333;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             margin-bottom: 20px;
         }
 
@@ -28,15 +33,14 @@
             grid-template-columns: repeat(4, 90px);
             grid-template-rows: repeat(6, 90px);
             gap: 12px;
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.85); /* Fondo del tablero semi-transparente */
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            /* Perspectiva para el efecto 3D de los paneles */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             perspective: 1000px; 
         }
 
-        /* Contenedor de la ficha (maneja la perspectiva individual) */
+        /* Contenedor de la ficha */
         .ficha {
             width: 90px;
             height: 90px;
@@ -44,28 +48,28 @@
             position: relative;
         }
 
-        /* El panel interno que realmente va a girar */
+        /* El panel interno que va a girar */
         .panel-interno {
             width: 100%;
             height: 100%;
             position: absolute;
             transform-style: preserve-3d;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             border-radius: 8px;
         }
 
-        /* Cuando la ficha tiene la clase 'volteada', el panel gira 180 grados */
+        /* Rotación al estar volteada */
         .ficha.volteada .panel-interno {
             transform: rotateY(180deg);
         }
 
-        /* Caras del panel (Dorso y Frente) */
+        /* Caras del panel */
         .cara {
             position: absolute;
             width: 100%;
             height: 100%;
-            backface-visibility: hidden; /* Oculta la cara contraria al girar */
+            backface-visibility: hidden;
             border-radius: 8px;
             overflow: hidden;
         }
@@ -76,18 +80,17 @@
             object-fit: cover;
         }
 
-        /* Cara del dorso (back.png) - Se ve al principio */
+        /* Cara del dorso (dorso.jpg) */
         .cara-dorso {
-            background-color: #34495e;
+            background-color: #2c3e50;
         }
 
-        /* Cara de la foto real - Está rotada por defecto detrás del dorso */
+        /* Cara de la foto real */
         .cara-frente {
             background-color: #fff;
             transform: rotateY(180deg);
         }
 
-        /* Desactivar clicks en fichas ya resueltas o volteadas */
         .ficha.bloqueada {
             cursor: default;
         }
@@ -100,18 +103,19 @@
     <div class="tablero" id="tablero"></div>
 
     <script>
-        // Nombres de tus 12 imágenes en la carpeta principal
+        // Nombres de tus 12 imágenes
         const imagenesOriginales = [
             '01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg',
             '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg'
         ];
 
-        // Duplicamos para armar las 24 fichas (12 pares)
         let mazo = [...imagenesOriginales, ...imagenesOriginales];
-
         let fichasVolteadas = [];
         let bloqueoTablero = false;
         const tableroElemento = document.getElementById('tablero');
+
+        // Preparamos el audio para el efecto de sonido
+        const sonidoClick = new Audio('click.mp3');
 
         // Mezclar mazo
         function mezclar(array) {
@@ -122,7 +126,7 @@
             return array;
         }
 
-        // Crear la estructura visual con efecto panel
+        // Crear la estructura visual
         function crearTablero() {
             tableroElemento.innerHTML = '';
             mezclar(mazo);
@@ -135,11 +139,11 @@
                 const panelInterno = document.createElement('div');
                 panelInterno.classList.add('panel-interno');
 
-                // Cara Dorso (back.png)
+                // Cara Dorso (dorso.jpg)
                 const caraDorso = document.createElement('div');
                 caraDorso.classList.add('cara', 'cara-dorso');
                 const imgDorso = document.createElement('img');
-                imgDorso.src = 'back.png'; // Cambiado a .png
+                imgDorso.src = 'dorso.jpg'; // Cambiado a dorso.jpg
                 caraDorso.appendChild(imgDorso);
 
                 // Cara Frente (Foto real)
@@ -149,7 +153,6 @@
                 imgReal.src = nombreImagen;
                 caraFrente.appendChild(imgReal);
 
-                // Armamos la estructura de capas
                 panelInterno.appendChild(caraDorso);
                 panelInterno.appendChild(caraFrente);
                 ficha.appendChild(panelInterno);
@@ -164,11 +167,16 @@
             if (bloqueoTablero) return;
             if (this.classList.contains('volteada') || this.classList.contains('bloqueada')) return;
 
-            // Volteamos visualmente la ficha usando la clase
+            // Reproducir el sonido inmediatamente al hacer click
+            sonidoClick.currentTime = 0; // Reinicia el audio por si se hace click rápido
+            sonidoClick.play().catch(error => {
+                // El navegador podría bloquear el audio si el usuario no interactuó antes con la página
+                console.log("El audio requiere interacción previa del usuario:", error);
+            });
+
             this.classList.add('volteada');
             fichasVolteadas.push(this);
 
-            // Si ya dimos vuelta dos, controlamos el par
             if (fichasVolteadas.length === 2) {
                 comprobarPar();
             }
@@ -178,25 +186,21 @@
             const [ficha1, ficha2] = fichasVolteadas;
 
             if (ficha1.dataset.imagen === ficha2.dataset.imagen) {
-                // ¡Coinciden! Las dejamos fijas y bloqueadas
                 ficha1.classList.add('bloqueada');
                 ficha2.classList.add('bloqueada');
                 fichasVolteadas = [];
             } else {
-                // No coinciden. Bloqueamos el click un segundo para que el usuario las vea
                 bloqueoTablero = true;
 
                 setTimeout(() => {
-                    // Les quitamos la clase y el CSS hace el efecto de giro inverso automáticamente
                     ficha1.classList.remove('volteada');
                     ficha2.classList.remove('volteada');
                     fichasVolteadas = [];
                     bloqueoTablero = false;
-                }, 1000); // 1 segundo de espera antes de volver a taparlas
+                }, 1000); // 1 segundo mostrando el error antes de girar de vuelta
             }
         }
 
-        // Iniciar
         crearTablero();
     </script>
 
