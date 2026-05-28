@@ -14,6 +14,7 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            user-select: none;
         }
 
         h1 {
@@ -26,79 +27,93 @@
             display: grid;
             grid-template-columns: repeat(4, 90px);
             grid-template-rows: repeat(6, 90px);
-            gap: 10px;
+            gap: 12px;
             background-color: #ffffff;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            /* Perspectiva para el efecto 3D de los paneles */
+            perspective: 1000px; 
         }
 
-        /* Estilo base de cada ficha */
+        /* Contenedor de la ficha (maneja la perspectiva individual) */
         .ficha {
             width: 90px;
             height: 90px;
-            border-radius: 8px;
             cursor: pointer;
             position: relative;
-            background-color: #ccc;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Imagen de fondo (dorso) y la foto real */
-        .ficha img {
+        /* El panel interno que realmente va a girar */
+        .panel-interno {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-radius: 8px;
+        }
+
+        /* Cuando la ficha tiene la clase 'volteada', el panel gira 180 grados */
+        .ficha.volteada .panel-interno {
+            transform: rotateY(180deg);
+        }
+
+        /* Caras del panel (Dorso y Frente) */
+        .cara {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Oculta la cara contraria al girar */
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .cara img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: opacity 0.2s ease;
         }
 
-        /* Al principio, la foto real está oculta y se ve el dorso */
-        .ficha .foto-real {
-            opacity: 0;
+        /* Cara del dorso (back.png) - Se ve al principio */
+        .cara-dorso {
+            background-color: #34495e;
         }
 
-        .ficha .foto-dorso {
-            opacity: 1;
+        /* Cara de la foto real - Está rotada por defecto detrás del dorso */
+        .cara-frente {
+            background-color: #fff;
+            transform: rotateY(180deg);
         }
 
-        /* Cuando la ficha se voltea, mostramos la foto real y ocultamos el dorso */
-        .ficha.volteada .foto-real {
-            opacity: 1;
-        }
-
-        .ficha.volteada .foto-dorso {
-            opacity: 0;
-        }
-
-        /* Desactivar clicks en fichas ya volteadas */
-        .ficha.volteada {
+        /* Desactivar clicks en fichas ya resueltas o volteadas */
+        .ficha.bloqueada {
             cursor: default;
         }
     </style>
 </head>
 <body>
 
-    <h1>Juego de Memoria (4x6)</h1>
+    <h1>Juego de Memoria</h1>
 
     <div class="tablero" id="tablero"></div>
 
     <script>
-        // 1. Creamos el array con los nombres de tus 12 imágenes
+        // Nombres de tus 12 imágenes en la carpeta principal
         const imagenesOriginales = [
             '01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg',
             '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg'
         ];
 
-        // 2. Duplicamos la lista para tener los 12 pares (24 fichas)
+        // Duplicamos para armar las 24 fichas (12 pares)
         let mazo = [...imagenesOriginales, ...imagenesOriginales];
 
+        let fichasVolteadas = [];
+        let bloqueoTablero = false;
         const tableroElemento = document.getElementById('tablero');
 
-        // 3. Función para mezclar el mazo (Algoritmo Fisher-Yates)
+        // Mezclar mazo
         function mezclar(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -107,45 +122,81 @@
             return array;
         }
 
-        // 4. Función para armar el tablero visualmente
+        // Crear la estructura visual con efecto panel
         function crearTablero() {
-            tableroElemento.innerHTML = ''; // Limpiamos el tablero por si acaso
-            mezclar(mazo); // Mezclamos las fotos
+            tableroElemento.innerHTML = '';
+            mezclar(mazo);
 
             mazo.forEach((nombreImagen) => {
-                // Creamos el contenedor de la ficha
                 const ficha = document.createElement('div');
                 ficha.classList.add('ficha');
-                ficha.dataset.imagen = nombreImagen; // Guardamos su "identidad" secreta
+                ficha.dataset.imagen = nombreImagen;
 
-                // Creamos la imagen del dorso (back.jpg)
+                const panelInterno = document.createElement('div');
+                panelInterno.classList.add('panel-interno');
+
+                // Cara Dorso (back.png)
+                const caraDorso = document.createElement('div');
+                caraDorso.classList.add('cara', 'cara-dorso');
                 const imgDorso = document.createElement('img');
-                imgDorso.src = 'back.jpg';
-                imgDorso.classList.add('foto-dorso');
+                imgDorso.src = 'back.png'; // Cambiado a .png
+                caraDorso.appendChild(imgDorso);
 
-                // Creamos la imagen real (01.jpg, etc.)
+                // Cara Frente (Foto real)
+                const caraFrente = document.createElement('div');
+                caraFrente.classList.add('cara', 'cara-frente');
                 const imgReal = document.createElement('img');
                 imgReal.src = nombreImagen;
-                imgReal.classList.add('foto-real');
+                caraFrente.appendChild(imgReal);
 
-                // Metemos ambas imágenes dentro de la ficha
-                ficha.appendChild(imgDorso);
-                ficha.appendChild(imgReal);
+                // Armamos la estructura de capas
+                panelInterno.appendChild(caraDorso);
+                panelInterno.appendChild(caraFrente);
+                ficha.appendChild(panelInterno);
 
-                // Le agregamos el evento del click (lo programaremos en el siguiente paso)
-                ficha.addEventListener('click', voltearFicha);
-
-                // Metemos la ficha en el tablero
+                ficha.addEventListener('click', alHacerClick);
                 tableroElemento.appendChild(ficha);
             });
         }
 
-        // 5. Función provisoria para ver cómo se dan vuelta al hacer click
-        function voltearFicha() {
-            this.classList.toggle('volteada');
+        // Lógica de juego al tocar una ficha
+        function alHacerClick() {
+            if (bloqueoTablero) return;
+            if (this.classList.contains('volteada') || this.classList.contains('bloqueada')) return;
+
+            // Volteamos visualmente la ficha usando la clase
+            this.classList.add('volteada');
+            fichasVolteadas.push(this);
+
+            // Si ya dimos vuelta dos, controlamos el par
+            if (fichasVolteadas.length === 2) {
+                comprobarPar();
+            }
         }
 
-        // Arrancar el juego al cargar la página
+        function comprobarPar() {
+            const [ficha1, ficha2] = fichasVolteadas;
+
+            if (ficha1.dataset.imagen === ficha2.dataset.imagen) {
+                // ¡Coinciden! Las dejamos fijas y bloqueadas
+                ficha1.classList.add('bloqueada');
+                ficha2.classList.add('bloqueada');
+                fichasVolteadas = [];
+            } else {
+                // No coinciden. Bloqueamos el click un segundo para que el usuario las vea
+                bloqueoTablero = true;
+
+                setTimeout(() => {
+                    // Les quitamos la clase y el CSS hace el efecto de giro inverso automáticamente
+                    ficha1.classList.remove('volteada');
+                    ficha2.classList.remove('volteada');
+                    fichasVolteadas = [];
+                    bloqueoTablero = false;
+                }, 1000); // 1 segundo de espera antes de volver a taparlas
+            }
+        }
+
+        // Iniciar
         crearTablero();
     </script>
 
