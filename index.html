@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Juego de Memoria Personalizado</title>
+    <title>Juego de Memoria - Edición Especial</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            /* back.png ahora es el fondo de toda la pantalla */
             background-image: url('back.png');
             background-size: cover;
             background-position: center;
@@ -21,19 +20,39 @@
             user-select: none;
         }
 
-        h1 {
-            color: #ffffff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            margin-bottom: 20px;
+        /* Encabezado con Logo y Reloj */
+        .header-juego {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 340px; /* Alineado al ancho del tablero */
+            margin-bottom: 15px;
         }
 
-        /* CUADRÍCULA: 4 columnas por 6 filas */
+        .logo-contenedor img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+        }
+
+        .temporizador {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: rgba(231, 76, 60, 0.85); /* Fondo rojo para el reloj */
+            padding: 5px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* CUADRÍCULA: 3 columnas por 5 filas */
         .tablero {
             display: grid;
-            grid-template-columns: repeat(4, 90px);
-            grid-template-rows: repeat(6, 90px);
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(5, 100px);
             gap: 12px;
-            background-color: rgba(255, 255, 255, 0.85); /* Fondo del tablero semi-transparente */
+            background-color: rgba(255, 255, 255, 0.85);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -42,8 +61,8 @@
 
         /* Contenedor de la ficha */
         .ficha {
-            width: 90px;
-            height: 90px;
+            width: 100px;
+            height: 100px;
             cursor: pointer;
             position: relative;
         }
@@ -74,7 +93,7 @@
             overflow: hidden;
         }
 
-        .cara img {
+        .cara img, .cara video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -85,7 +104,7 @@
             background-color: #2c3e50;
         }
 
-        /* Cara de la foto real */
+        /* Cara de la foto real / video */
         .cara-frente {
             background-color: #fff;
             transform: rotateY(180deg);
@@ -98,26 +117,56 @@
 </head>
 <body>
 
-    <h1>Juego de Memoria</h1>
+    <div class="header-juego">
+        <div class="logo-contenedor">
+            <img src="logo.jpg" alt="Logo">
+        </div>
+        <div class="temporizador" id="reloj">03:00</div>
+    </div>
 
     <div class="tablero" id="tablero"></div>
 
     <script>
-        // Nombres de tus 12 imágenes
-        const imagenesOriginales = [
+        // Banco completo de tus 12 imágenes disponibles
+        const bancoJugadores = [
             '01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg',
             '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg'
         ];
 
-        let mazo = [...imagenesOriginales, ...imagenesOriginales];
+        let mazo = [];
         let fichasVolteadas = [];
         let bloqueoTablero = false;
+        
+        // Variables para el tiempo
+        let tiempoRestante = 180; // 3 minutos en segundos
+        let intervaloReloj = null;
+        let juegoIniciado = false;
+
         const tableroElemento = document.getElementById('tablero');
+        const relojElemento = document.getElementById('reloj');
 
-        // Preparamos el audio para el efecto de sonido
+        // Audios
         const sonidoClick = new Audio('click.mp3');
+        const sonidoBobo = new Audio('bobo.mp3');
+        const sonidoTicTac = new Audio('tictac.mp3');
+        sonidoTicTac.loop = true; // El tictac se repite constantemente
 
-        // Mezclar mazo
+        // 1. Función para elegir 7 jugadores al azar asegurando que esté el 01.jpg
+        function seleccionarJugadores() {
+            // Filtramos el banco para sacar el 01.jpg temporalmente
+            let cartasRestantes = bancoJugadores.filter(img => img !== '01.jpg');
+            
+            // Mezclamos las 11 cartas restantes al azar
+            cartasRestantes.sort(() => Math.random() - 0.5);
+            
+            // Tomamos 6 de esas cartas mezcladas y le sumamos obligatoriamente la '01.jpg'
+            let seleccionados = ['01.jpg', ...cartasRestantes.slice(0, 6)];
+            
+            // Devolvemos el mazo final duplicando los 7 seleccionados y sumando el video fantasma
+            return [...seleccionados, ...seleccionados, 'bobo.mp4'];
+        }
+
+        // Mezclar mazo final (Algoritmo Fisher-Yates)
         function mezclar(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -126,15 +175,43 @@
             return array;
         }
 
-        // Crear la estructura visual
+        // Iniciar la cuenta regresiva
+        function iniciarTiempo() {
+            juegoIniciado = true;
+            sonidoTicTac.play().catch(e => console.log("Permiso de audio requerido"));
+
+            intervaloReloj = setInterval(() => {
+                tiempoRestante--;
+                
+                let minutos = Math.floor(tiempoRestante / 60);
+                let segundos = tiempoRestante % 60;
+                
+                // Formato de dos dígitos (00:00)
+                relojElemento.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+
+                if (tiempoRestante <= 0) {
+                    clearInterval(intervaloReloj);
+                    sonidoTicTac.pause();
+                    bloqueoTablero = true;
+                    alert("¡Tiempo cumplido! Se acabó el juego.");
+                }
+            }, 1000);
+        }
+
+        // Crear la estructura visual del tablero
         function crearTablero() {
             tableroElemento.innerHTML = '';
-            mezclar(mazo);
+            mazo = seleccionarJugadores(); // Elige los 7 + bobo.mp4
+            mezclar(mazo); // Mezcla las 15 posiciones
 
-            mazo.forEach((nombreImagen) => {
+            mazo.forEach((archivo) => {
                 const ficha = document.createElement('div');
                 ficha.classList.add('ficha');
-                ficha.dataset.imagen = nombreImagen;
+                ficha.dataset.archivo = archivo;
+
+                // Definimos si es video o foto normal
+                const esVideo = archivo.endsWith('.mp4');
+                ficha.dataset.tipo = esVideo ? 'especial' : 'normal';
 
                 const panelInterno = document.createElement('div');
                 panelInterno.classList.add('panel-interno');
@@ -143,15 +220,25 @@
                 const caraDorso = document.createElement('div');
                 caraDorso.classList.add('cara', 'cara-dorso');
                 const imgDorso = document.createElement('img');
-                imgDorso.src = 'dorso.jpg'; // Cambiado a dorso.jpg
+                imgDorso.src = 'dorso.jpg';
                 caraDorso.appendChild(imgDorso);
 
-                // Cara Frente (Foto real)
+                // Cara Frente (Foto o Video)
                 const caraFrente = document.createElement('div');
                 caraFrente.classList.add('cara', 'cara-frente');
-                const imgReal = document.createElement('img');
-                imgReal.src = nombreImagen;
-                caraFrente.appendChild(imgReal);
+                
+                if (esVideo) {
+                    const videoElement = document.createElement('video');
+                    videoElement.src = archivo;
+                    videoElement.muted = true; // Muteado porque el audio sale por bobo.mp3
+                    videoElement.playsInline = true;
+                    videoElement.id = 'video-fantasma';
+                    caraFrente.appendChild(videoElement);
+                } else {
+                    const imgReal = document.createElement('img');
+                    imgReal.src = archivo;
+                    caraFrente.appendChild(imgReal);
+                }
 
                 panelInterno.appendChild(caraDorso);
                 panelInterno.appendChild(caraFrente);
@@ -162,17 +249,46 @@
             });
         }
 
-        // Lógica de juego al tocar una ficha
+        // Lógica al tocar una ficha
         function alHacerClick() {
             if (bloqueoTablero) return;
             if (this.classList.contains('volteada') || this.classList.contains('bloqueada')) return;
 
-            // Reproducir el sonido inmediatamente al hacer click
-            sonidoClick.currentTime = 0; // Reinicia el audio por si se hace click rápido
-            sonidoClick.play().catch(error => {
-                // El navegador podría bloquear el audio si el usuario no interactuó antes con la página
-                console.log("El audio requiere interacción previa del usuario:", error);
-            });
+            // Arrancar el tiempo y el tictac con la primera interacción del usuario
+            if (!juegoIniciado) {
+                iniciarTiempo();
+            }
+
+            // CASO FICHA FANTASMA (bobo.mp4)
+            if (this.dataset.tipo === 'especial') {
+                bloqueoTablero = true;
+                
+                // Audio de bobo
+                sonidoBobo.currentTime = 0;
+                sonidoBobo.play().catch(e => console.log(e));
+
+                // Video de bobo
+                const video = document.getElementById('video-fantasma');
+                if (video) {
+                    video.currentTime = 0;
+                    video.play().catch(e => console.log(e));
+                }
+
+                this.classList.add('volteada');
+
+                // Se cierra sola a los 2 segundos
+                setTimeout(() => {
+                    this.classList.remove('volteada');
+                    if (video) video.pause(); // Pausa el video al taparse
+                    bloqueoTablero = false;
+                }, 2000); 
+                
+                return;
+            }
+
+            // CASO JUGADOR NORMAL
+            sonidoClick.currentTime = 0;
+            sonidoClick.play().catch(e => console.log(e));
 
             this.classList.add('volteada');
             fichasVolteadas.push(this);
@@ -185,10 +301,18 @@
         function comprobarPar() {
             const [ficha1, ficha2] = fichasVolteadas;
 
-            if (ficha1.dataset.imagen === ficha2.dataset.imagen) {
+            if (ficha1.dataset.archivo === ficha2.dataset.archivo) {
                 ficha1.classList.add('bloqueada');
                 ficha2.classList.add('bloqueada');
                 fichasVolteadas = [];
+                
+                // Comprobamos si ya ganaste (todas las normales bloqueadas)
+                const normalesPorResolver = document.querySelectorAll('.ficha[data-tipo="normal"]:not(.bloqueada)');
+                if (normalesPorResolver.length === 0) {
+                    clearInterval(intervaloReloj);
+                    sonidoTicTac.pause();
+                    setTimeout(() => alert("¡Felicitaciones! Encontraste todos los pares."), 500);
+                }
             } else {
                 bloqueoTablero = true;
 
@@ -197,7 +321,7 @@
                     ficha2.classList.remove('volteada');
                     fichasVolteadas = [];
                     bloqueoTablero = false;
-                }, 1000); // 1 segundo mostrando el error antes de girar de vuelta
+                }, 1000);
             }
         }
 
