@@ -113,11 +113,19 @@
             perspective: 1000px; 
         }
 
+        /* Contenedor de la ficha con FILETE AZUL Y BLANCO */
         .ficha {
             width: 100px;
             height: 100px;
             cursor: pointer;
             position: relative;
+            box-sizing: border-box;
+            border-top: 3px solid #3498db;    /* Azul superior */
+            border-bottom: 3px solid #3498db; /* Azul inferior */
+            border-left: 3px solid #ffffff;   /* Blanco izquierdo */
+            border-right: 3px solid #ffffff;  /* Blanco derecho */
+            border-radius: 12px;              /* Un poquito más redondeado por el borde */
+            background-color: #ffffff;
         }
 
         .panel-interno {
@@ -149,7 +157,6 @@
             object-fit: cover;
         }
 
-        /* Cara del dorso ahora usa fondo blanco o el color de tu logo */
         .cara-dorso {
             background-color: #ffffff;
         }
@@ -164,7 +171,7 @@
         }
 
         /* ========================================================
-           PANTALLA DE DERROTA (Oculta por defecto)
+           PANTALLA DE DERROTA
            ======================================================== */
         #pantalla-derrota {
             display: none;
@@ -199,7 +206,7 @@
 </head>
 <body>
 
-    <div id="pantalla-entrada">
+    <div id="pantalla-entrada" onmousemove="activarHinchada()" onclick="activarHinchada()">
         <div class="logo-grande">
             <img src="logo.jpg" alt="Logo Principal">
         </div>
@@ -233,9 +240,10 @@
         let fichasVolteadas = [];
         let bloqueoTablero = false;
         
-        let tiempoRestante = 40; // Ajustado a 40 segundos
+        let tiempoRestante = 40; 
         let intervaloReloj = null;
         let juegoIniciado = false;
+        let hinchadaSonando = false;
 
         const tableroElemento = document.getElementById('tablero');
         const relojElemento = document.getElementById('reloj');
@@ -247,9 +255,20 @@
         sonidoTicTac.loop = true;
         
         const sonidoHinchada = new Audio('hinchada.mp3');
-        sonidoHinchada.loop = true; // La hinchada canta todo el tiempo
+        sonidoHinchada.loop = true; 
         
         const sonidoMal = new Audio('mal.mp3');
+
+        // Función para que la hinchada suene de entrada con cualquier interacción en el lobby
+        function activarHinchada() {
+            if (!hinchadaSonando) {
+                hinchadaSonando = true;
+                sonidoHinchada.play().catch(e => {
+                    // Si el navegador bloquea el autoplay inicial, reintenta en el próximo movimiento
+                    hinchadaSonando = false; 
+                });
+            }
+        }
 
         function comenzarExperiencia() {
             const elem = document.documentElement;
@@ -260,6 +279,10 @@
             } else if (elem.msRequestFullscreen) {
                 elem.msRequestFullscreen();
             }
+
+            // FRENAR LA HINCHADA al entrar al juego
+            sonidoHinchada.pause();
+            sonidoHinchada.currentTime = 0;
 
             document.getElementById('pantalla-entrada').style.display = 'none';
             document.getElementById('zona-juego').style.display = 'flex';
@@ -284,10 +307,7 @@
 
         function iniciarTiempo() {
             juegoIniciado = true;
-            
-            // Arrancan los sonidos de fondo
             sonidoTicTac.play().catch(e => console.log(e));
-            sonidoHinchada.play().catch(e => console.log(e));
 
             intervaloReloj = setInterval(() => {
                 tiempoRestante--;
@@ -303,38 +323,28 @@
         function finalizarPorTiempo() {
             clearInterval(intervaloReloj);
             sonidoTicTac.pause();
-            sonidoHinchada.pause();
             
-            // Suena el audio de derrota
             sonidoMal.currentTime = 0;
             sonidoMal.play().catch(e => console.log(e));
             
             bloqueoTablero = true;
-            
-            // Mostramos el panel de derrota encima del tablero
             pantallaDerrota.style.display = 'flex';
         }
 
         function reiniciarJuego() {
-            // Reset de variables lógicas
             tiempoRestante = 40;
             fichasVolteadas = [];
             bloqueoTablero = false;
             juegoIniciado = false;
             
-            // Frenar audios por las dudas
             sonidoTicTac.pause();
             sonidoTicTac.currentTime = 0;
-            sonidoHinchada.pause();
-            sonidoHinchada.currentTime = 0;
             sonidoMal.pause();
             sonidoMal.currentTime = 0;
 
-            // Interfaz
             relojElemento.innerText = "00:40";
             pantallaDerrota.style.display = 'none';
 
-            // Volver a armar todo
             crearTablero();
         }
 
@@ -354,11 +364,10 @@
                 const panelInterno = document.createElement('div');
                 panelInterno.classList.add('panel-interno');
 
-                // Cara Dorso (Ajustado para que sea logo.jpg)
                 const caraDorso = document.createElement('div');
                 caraDorso.classList.add('cara', 'cara-dorso');
                 const imgDorso = document.createElement('img');
-                imgDorso.src = 'logo.jpg'; // Usando el logo de dorso
+                imgDorso.src = 'logo.jpg'; 
                 caraDorso.appendChild(imgDorso);
 
                 const caraFrente = document.createElement('div');
@@ -423,6 +432,10 @@
             const nombreAudio = nombreImagen.replace('.jpg', '.mp3');
             
             const sonidoAsociado = new Audio(nombreAudio);
+            
+            // VOLUMEN AL MÁXIMO (Ajuste pedido)
+            sonidoAsociado.volume = 1.0; 
+            
             sonidoAsociado.currentTime = 0;
             sonidoAsociado.play().catch(e => console.log(e));
 
@@ -446,7 +459,6 @@
                 if (normalesPorResolver.length === 0) {
                     clearInterval(intervaloReloj);
                     sonidoTicTac.pause();
-                    sonidoHinchada.pause();
                     setTimeout(() => alert("¡Felicitaciones! Encontraste todos los pares."), 500);
                 }
             } else {
