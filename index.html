@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Edición Especial</title>
     <style>
-        /* Estilos generales de fondo */
         body {
             font-family: Arial, sans-serif;
             background-image: url('back.png');
@@ -32,13 +31,12 @@
             justify-content: center;
             text-align: center;
             z-index: 10;
-            background-color: rgba(0, 0, 0, 0.4); /* Oscurece un poco el fondo para resaltar */
+            background-color: rgba(0, 0, 0, 0.4);
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            transition: opacity 0.5s ease;
         }
 
         .logo-grande img {
@@ -48,38 +46,33 @@
             filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.5));
         }
 
-        .btn-jugar {
+        .btn-general {
             padding: 15px 40px;
             font-size: 1.5rem;
             font-weight: bold;
             color: #ffffff;
-            background-color: #2ecc71; /* Verde llamativo */
+            background-color: #2ecc71;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
-            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, background-color 0.2s;
         }
 
-        .btn-jugar:hover {
+        .btn-general:hover {
             transform: scale(1.08);
             background-color: #27ae60;
-            box-shadow: 0 6px 25px rgba(46, 204, 113, 0.6);
         }
-
-        .btn-jugar:active {
-            transform: scale(0.98);
-        }
-
 
         /* ========================================================
-           ZONA DEL JUEGO (Oculta al principio)
+           ZONA DEL JUEGO
            ======================================================== */
         #zona-juego {
-            display: none; /* Se activa por JS */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .header-juego {
@@ -156,8 +149,9 @@
             object-fit: cover;
         }
 
+        /* Cara del dorso ahora usa fondo blanco o el color de tu logo */
         .cara-dorso {
-            background-color: #2c3e50;
+            background-color: #ffffff;
         }
 
         .cara-frente {
@@ -168,6 +162,39 @@
         .ficha.bloqueada {
             cursor: default;
         }
+
+        /* ========================================================
+           PANTALLA DE DERROTA (Oculta por defecto)
+           ======================================================== */
+        #pantalla-derrota {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 20;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #pantalla-derrota h2 {
+            font-size: 2rem;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        #pantalla-derrota p {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
     </style>
 </head>
 <body>
@@ -176,7 +203,7 @@
         <div class="logo-grande">
             <img src="logo.jpg" alt="Logo Principal">
         </div>
-        <button class="btn-jugar" onclick="comenzarExperiencia()">JUGAR</button>
+        <button class="btn-general" onclick="comenzarExperiencia()">JUGAR</button>
     </div>
 
     <div id="zona-juego">
@@ -184,10 +211,16 @@
             <div class="logo-contenedor">
                 <img src="logo.jpg" alt="Logo">
             </div>
-            <div class="temporizador" id="reloj">03:00</div>
+            <div class="temporizador" id="reloj">00:40</div>
         </div>
 
         <div class="tablero" id="tablero"></div>
+
+        <div id="pantalla-derrota">
+            <h2>¡¡Perdiste!!</h2>
+            <p>¿Intentamos de nuevo?</p>
+            <button class="btn-general" onclick="reiniciarJuego()">Volver a jugar</button>
+        </div>
     </div>
 
     <script>
@@ -200,40 +233,40 @@
         let fichasVolteadas = [];
         let bloqueoTablero = false;
         
-        let tiempoRestante = 180; 
+        let tiempoRestante = 40; // Ajustado a 40 segundos
         let intervaloReloj = null;
         let juegoIniciado = false;
 
         const tableroElemento = document.getElementById('tablero');
         const relojElemento = document.getElementById('reloj');
+        const pantallaDerrota = document.getElementById('pantalla-derrota');
 
-        // Audios
-        const sonidoClick = new Audio('click.mp3');
+        // Audios globales fijos
         const sonidoBobo = new Audio('bobo.mp3');
         const sonidoTicTac = new Audio('tictac.mp3');
         sonidoTicTac.loop = true;
+        
+        const sonidoHinchada = new Audio('hinchada.mp3');
+        sonidoHinchada.loop = true; // La hinchada canta todo el tiempo
+        
+        const sonidoMal = new Audio('mal.mp3');
 
-        // Función para activar Pantalla Completa y pasar al juego
         function comenzarExperiencia() {
-            // Solicitar pantalla completa al navegador
             const elem = document.documentElement;
             if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch(err => console.log("Error al activar pantalla completa:", err));
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.requestFullscreen().catch(err => console.log(err));
+            } else if (elem.webkitRequestFullscreen) {
                 elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
+            } else if (elem.msRequestFullscreen) {
                 elem.msRequestFullscreen();
             }
 
-            // Ocultar pantalla de entrada y mostrar juego
             document.getElementById('pantalla-entrada').style.display = 'none';
             document.getElementById('zona-juego').style.display = 'flex';
 
-            // Inicializar el tablero listo para el primer click
             crearTablero();
         }
 
-        // Selección de jugadores (Asegura 01.jpg + 6 al azar)
         function seleccionarJugadores() {
             let cartasRestantes = bancoJugadores.filter(img => img !== '01.jpg');
             cartasRestantes.sort(() => Math.random() - 0.5);
@@ -251,23 +284,58 @@
 
         function iniciarTiempo() {
             juegoIniciado = true;
+            
+            // Arrancan los sonidos de fondo
             sonidoTicTac.play().catch(e => console.log(e));
+            sonidoHinchada.play().catch(e => console.log(e));
 
             intervaloReloj = setInterval(() => {
                 tiempoRestante--;
                 
-                let minutos = Math.floor(tiempoRestante / 60);
-                let segundos = tiempoRestante % 60;
-                
-                relojElemento.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                relojElemento.innerText = `00:${tiempoRestante.toString().padStart(2, '0')}`;
 
                 if (tiempoRestante <= 0) {
-                    clearInterval(intervaloReloj);
-                    sonidoTicTac.pause();
-                    bloqueoTablero = true;
-                    alert("¡Tiempo cumplido! Se acabó el juego.");
+                    finalizarPorTiempo();
                 }
             }, 1000);
+        }
+
+        function finalizarPorTiempo() {
+            clearInterval(intervaloReloj);
+            sonidoTicTac.pause();
+            sonidoHinchada.pause();
+            
+            // Suena el audio de derrota
+            sonidoMal.currentTime = 0;
+            sonidoMal.play().catch(e => console.log(e));
+            
+            bloqueoTablero = true;
+            
+            // Mostramos el panel de derrota encima del tablero
+            pantallaDerrota.style.display = 'flex';
+        }
+
+        function reiniciarJuego() {
+            // Reset de variables lógicas
+            tiempoRestante = 40;
+            fichasVolteadas = [];
+            bloqueoTablero = false;
+            juegoIniciado = false;
+            
+            // Frenar audios por las dudas
+            sonidoTicTac.pause();
+            sonidoTicTac.currentTime = 0;
+            sonidoHinchada.pause();
+            sonidoHinchada.currentTime = 0;
+            sonidoMal.pause();
+            sonidoMal.currentTime = 0;
+
+            // Interfaz
+            relojElemento.innerText = "00:40";
+            pantallaDerrota.style.display = 'none';
+
+            // Volver a armar todo
+            crearTablero();
         }
 
         function crearTablero() {
@@ -286,10 +354,11 @@
                 const panelInterno = document.createElement('div');
                 panelInterno.classList.add('panel-interno');
 
+                // Cara Dorso (Ajustado para que sea logo.jpg)
                 const caraDorso = document.createElement('div');
                 caraDorso.classList.add('cara', 'cara-dorso');
                 const imgDorso = document.createElement('img');
-                imgDorso.src = 'dorso.jpg';
+                imgDorso.src = 'logo.jpg'; // Usando el logo de dorso
                 caraDorso.appendChild(imgDorso);
 
                 const caraFrente = document.createElement('div');
@@ -321,7 +390,6 @@
             if (bloqueoTablero) return;
             if (this.classList.contains('volteada') || this.classList.contains('bloqueada')) return;
 
-            // Iniciar tiempo en el primer toque de ficha
             if (!juegoIniciado) {
                 iniciarTiempo();
             }
@@ -351,8 +419,12 @@
             }
 
             // CASO NORMAL
-            sonidoClick.currentTime = 0;
-            sonidoClick.play().catch(e => console.log(e));
+            const nombreImagen = this.dataset.archivo;
+            const nombreAudio = nombreImagen.replace('.jpg', '.mp3');
+            
+            const sonidoAsociado = new Audio(nombreAudio);
+            sonidoAsociado.currentTime = 0;
+            sonidoAsociado.play().catch(e => console.log(e));
 
             this.classList.add('volteada');
             fichasVolteadas.push(this);
@@ -374,6 +446,7 @@
                 if (normalesPorResolver.length === 0) {
                     clearInterval(intervaloReloj);
                     sonidoTicTac.pause();
+                    sonidoHinchada.pause();
                     setTimeout(() => alert("¡Felicitaciones! Encontraste todos los pares."), 500);
                 }
             } else {
