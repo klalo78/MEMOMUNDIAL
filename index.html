@@ -113,18 +113,18 @@
             perspective: 1000px; 
         }
 
-        /* Contenedor de la ficha con FILETE AZUL Y BLANCO */
+        /* Contenedor de la ficha con Filete Azul y Blanco */
         .ficha {
             width: 100px;
             height: 100px;
             cursor: pointer;
             position: relative;
             box-sizing: border-box;
-            border-top: 3px solid #3498db;    /* Azul superior */
-            border-bottom: 3px solid #3498db; /* Azul inferior */
-            border-left: 3px solid #ffffff;   /* Blanco izquierdo */
-            border-right: 3px solid #ffffff;  /* Blanco derecho */
-            border-radius: 12px;              /* Un poquito más redondeado por el borde */
+            border-top: 3px solid #3498db;
+            border-bottom: 3px solid #3498db;
+            border-left: 3px solid #ffffff;
+            border-right: 3px solid #ffffff;
+            border-radius: 12px;
             background-color: #ffffff;
         }
 
@@ -224,8 +224,8 @@
         <div class="tablero" id="tablero"></div>
 
         <div id="pantalla-derrota">
-            <h2>¡¡Perdiste!!</h2>
-            <p>¿Intentamos de nuevo?</p>
+            <h2>Perdiste</h2>
+            <p>Intentamos de nuevo?</p>
             <button class="btn-general" onclick="reiniciarJuego()">Volver a jugar</button>
         </div>
     </div>
@@ -249,22 +249,20 @@
         const relojElemento = document.getElementById('reloj');
         const pantallaDerrota = document.getElementById('pantalla-derrota');
 
-        // Audios globales fijos
+        // Audios globales corregidos
         const sonidoBobo = new Audio('bobo.mp3');
         const sonidoTicTac = new Audio('tictac.mp3');
         sonidoTicTac.loop = true;
         
-        const sonidoHinchada = new Audio('hinchada.mp3');
+        const sonidoHinchada = new Audio('hinchada.mp3'); // Corregido el nombre
         sonidoHinchada.loop = true; 
         
         const sonidoMal = new Audio('mal.mp3');
 
-        // Función para que la hinchada suene de entrada con cualquier interacción en el lobby
         function activarHinchada() {
             if (!hinchadaSonando) {
                 hinchadaSonando = true;
                 sonidoHinchada.play().catch(e => {
-                    // Si el navegador bloquea el autoplay inicial, reintenta en el próximo movimiento
                     hinchadaSonando = false; 
                 });
             }
@@ -280,7 +278,6 @@
                 elem.msRequestFullscreen();
             }
 
-            // FRENAR LA HINCHADA al entrar al juego
             sonidoHinchada.pause();
             sonidoHinchada.currentTime = 0;
 
@@ -403,7 +400,6 @@
                 iniciarTiempo();
             }
 
-            // CASO FANTASMA
             if (this.dataset.tipo === 'especial') {
                 bloqueoTablero = true;
                 
@@ -427,13 +423,10 @@
                 return;
             }
 
-            // CASO NORMAL
             const nombreImagen = this.dataset.archivo;
             const nombreAudio = nombreImagen.replace('.jpg', '.mp3');
             
             const sonidoAsociado = new Audio(nombreAudio);
-            
-            // VOLUMEN AL MÁXIMO (Ajuste pedido)
             sonidoAsociado.volume = 1.0; 
             
             sonidoAsociado.currentTime = 0;
