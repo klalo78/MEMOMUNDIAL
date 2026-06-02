@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Edición Especial</title>
-    <!-- Cargamos los íconos para el logo de WhatsApp -->
+    <!-- Íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Reseteo básico */
+        * { box-sizing: border-box; }
+        
         body {
             font-family: Arial, sans-serif;
             background-image: url('back.png');
@@ -24,23 +27,18 @@
             overflow: hidden;
         }
 
-        /* ========================================================
-           ANIMACIONES
-           ======================================================== */
+        /* ANIMACIONES */
         @keyframes moviLogo {
             0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.4)); }
             50% { transform: scale(1.04) rotate(1deg); filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.6)); }
         }
 
-        /* Animación para que el texto titile a blanco */
         @keyframes titilar {
             0%, 100% { color: rgba(255, 255, 255, 0.6); }
             50% { color: rgba(255, 255, 255, 1); text-shadow: 0 0 10px rgba(255,255,255,0.8); }
         }
 
-        /* ========================================================
-           PANTALLA DE ENTRADA (LOBBY)
-           ======================================================== */
+        /* ESTRUCTURA PÁGINA DE ENTRADA */
         #pantalla-entrada {
             display: flex;
             flex-direction: column;
@@ -76,34 +74,21 @@
 
         .btn-general:hover { transform: scale(1.08); background-color: #27ae60; }
 
-        /* SECCIÓN DE CONTACTO ACTUALIZADA */
         .bloque-contacto {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 5px;
             text-decoration: none;
-            transition: transform 0.2s;
         }
 
-        .bloque-contacto:hover { transform: scale(1.1); }
-
-        .bloque-contacto i {
-            color: #25d366; /* Verde WhatsApp */
-            font-size: 1.8rem;
+        .bloque-contacto i { color: #25d366; font-size: 1.8rem; }
+        .bloque-contacto span { 
+            font-size: 0.9rem; font-style: italic; 
+            animation: titilar 2s infinite ease-in-out; 
         }
 
-        .bloque-contacto span {
-            font-size: 0.9rem;
-            font-style: italic;
-            text-transform: lowercase;
-            /* Aplicamos la animación de titilado */
-            animation: titilar 2s infinite ease-in-out;
-        }
-
-        /* ========================================================
-           ZONA DEL JUEGO
-           ======================================================== */
+        /* ESTRUCTURA JUEGO */
         #zona-juego {
             display: none;
             flex-direction: column;
@@ -153,8 +138,8 @@
         }
 
         .ficha {
-            width: 100px; height: 100px;
-            cursor: pointer; position: relative; box-sizing: border-box;
+            width: 100px; height: 100px; cursor: pointer; position: relative;
+            box-sizing: border-box;
             border-top: 3px solid #3498db; border-bottom: 3px solid #3498db;
             border-left: 3px solid #ffffff; border-right: 3px solid #ffffff;
             border-radius: 12px; background-color: #ffffff;
@@ -164,7 +149,6 @@
             width: 100%; height: 100%; position: absolute;
             transform-style: preserve-3d;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;
         }
 
         .ficha.volteada .panel-interno { transform: rotateY(180deg); }
@@ -179,7 +163,7 @@
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.85); z-index: 20;
             flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px; color: #ffffff; text-align: center; padding: 20px; box-sizing: border-box;
+            border-radius: 12px; color: #ffffff; text-align: center; padding: 20px;
         }
     </style>
 </head>
@@ -187,29 +171,21 @@
 
     <!-- PANTALLA DE ENTRADA -->
     <div id="pantalla-entrada">
-        <div class="logo-grande">
-            <img src="logo.png" alt="Logo">
-        </div>
+        <div class="logo-grande"><img src="logo.png" alt="Logo"></div>
         <button class="btn-general" onclick="comenzarExperiencia()">JUGAR</button>
-        
-        <!-- LINK DE WHATSAPP CON LOGO ARRIBA Y TEXTO TITILANTE ABAJO -->
-        <a class="bloqueo-contacto bloque-contacto" href="https://wa.me/541149496902" target="_blank" rel="noopener noreferrer">
+        <a class="bloque-contacto" href="https://wa.me/541149496902" target="_blank">
             <i class="fa-brands fa-whatsapp"></i>
             <span>dise&ntilde;o multimedia</span>
         </a>
     </div>
 
-    <!-- INTERFAZ DEL JUEGO -->
+    <!-- ZONA JUEGO -->
     <div id="zona-juego">
         <div class="header-juego">
-            <div class="logo-contenedor">
-                <img src="logo.png" alt="Logo">
-            </div>
+            <div class="logo-contenedor"><img src="logo.png" alt="Logo"></div>
             <div class="temporizador" id="reloj">00:40</div>
         </div>
-
         <div class="tablero" id="tablero"></div>
-
         <div id="pantalla-derrota">
             <h2>Perdiste</h2>
             <p>Intentamos de nuevo?</p>
@@ -218,161 +194,89 @@
     </div>
 
     <script>
-        const bancoJugadores = [
-            '01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg',
-            '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg'
-        ];
-
-        let mazo = [];
-        let fichasVolteadas = [];
-        let bloqueoTablero = false;
-        let tiempoRestante = 40; 
-        let intervaloReloj = null;
-        let juegoIniciado = false;
-
-        const tableroElemento = document.getElementById('tablero');
-        const relojElemento = document.getElementById('reloj');
-        const pantallaDerrota = document.getElementById('pantalla-derrota');
-
-        const sonidoBobo = new Audio('bobo.mp3');
-        const sonidoTicTac = new Audio('tictac.mp3');
-        sonidoTicTac.loop = true;
-        const sonidoHinchada = new Audio('hinchada.mp3');
-        sonidoHinchada.loop = true; 
-        const sonidoMal = new Audio('mal.mp3');
+        // Lógica de juego simplificada para asegurar funcionamiento
+        const bancoJugadores = ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg'];
+        let mazo = [], fichasVolteadas = [], bloqueoTablero = false, tiempoRestante = 40, intervaloReloj = null, juegoIniciado = false;
 
         function comenzarExperiencia() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err));
-            } else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-
+            document.documentElement.requestFullscreen().catch(e => console.log(e));
             document.getElementById('pantalla-entrada').style.display = 'none';
             document.getElementById('zona-juego').style.display = 'flex';
             crearTablero();
         }
 
         function seleccionarJugadores() {
-            let cartasRestantes = bancoJugadores.filter(img => img !== '01.jpg');
-            cartasRestantes.sort(() => Math.random() - 0.5);
-            let seleccionados = ['01.jpg', ...cartasRestantes.slice(0, 6)];
-            return [...seleccionados, ...seleccionados, 'bobo.mp4'];
-        }
-
-        function mezclar(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        function iniciarTiempo() {
-            juegoIniciado = true;
-            sonidoTicTac.play().catch(e => console.log(e));
-            intervaloReloj = setInterval(() => {
-                tiempoRestante--;
-                relojElemento.innerText = `00:${tiempoRestante.toString().padStart(2, '0')}`;
-                if (tiempoRestante <= 0) { finalizarPorTiempo(); }
-            }, 1000);
-        }
-
-        function finalizarPorTiempo() {
-            clearInterval(intervaloReloj);
-            sonidoTicTac.pause();
-            sonidoMal.currentTime = 0;
-            sonidoMal.play().catch(e => console.log(e));
-            sonidoHinchada.currentTime = 0;
-            sonidoHinchada.play().catch(e => console.log(e));
-            bloqueoTablero = true;
-            pantallaDerrota.style.display = 'flex';
-        }
-
-        function reiniciarJuego() {
-            tiempoRestante = 40; fichasVolteadas = []; bloqueoTablero = false; juegoIniciado = false;
-            sonidoTicTac.pause(); sonidoTicTac.currentTime = 0;
-            sonidoMal.pause(); sonidoMal.currentTime = 0;
-            sonidoHinchada.pause(); sonidoHinchada.currentTime = 0;
-            relojElemento.innerText = "00:40";
-            pantallaDerrota.style.display = 'none';
-            crearTablero();
+            let restantes = bancoJugadores.filter(img => img !== '01.jpg');
+            restantes.sort(() => Math.random() - 0.5);
+            let sel = ['01.jpg', ...restantes.slice(0, 6)];
+            return [...sel, ...sel, 'bobo.mp4'].sort(() => Math.random() - 0.5);
         }
 
         function crearTablero() {
-            tableroElemento.innerHTML = '';
+            const tablero = document.getElementById('tablero');
+            tablero.innerHTML = '';
             mazo = seleccionarJugadores();
-            mezclar(mazo);
-            mazo.forEach((archivo) => {
-                const ficha = document.createElement('div');
-                ficha.classList.add('ficha');
-                ficha.dataset.archivo = archivo;
+            mazo.forEach(archivo => {
                 const esVideo = archivo.endsWith('.mp4');
-                ficha.dataset.tipo = esVideo ? 'especial' : 'normal';
-                const panelInterno = document.createElement('div');
-                panelInterno.classList.add('panel-interno');
-                const caraDorso = document.createElement('div');
-                caraDorso.classList.add('cara', 'cara-dorso');
-                const imgDorso = document.createElement('img');
-                imgDorso.src = 'logo.jpg'; 
-                caraDorso.appendChild(imgDorso);
-                const caraFrente = document.createElement('div');
-                caraFrente.classList.add('cara', 'cara-frente');
-                if (esVideo) {
-                    const videoElement = document.createElement('video');
-                    videoElement.src = archivo; videoElement.muted = true; videoElement.playsInline = true;
-                    videoElement.id = 'video-fantasma'; caraFrente.appendChild(videoElement);
-                } else {
-                    const imgReal = document.createElement('img');
-                    imgReal.src = archivo; caraFrente.appendChild(imgReal);
-                }
-                panelInterno.appendChild(caraDorso);
-                panelInterno.appendChild(caraFrente);
-                ficha.appendChild(panelInterno);
-                ficha.addEventListener('click', alHacerClick);
-                tableroElemento.appendChild(ficha);
+                const ficha = document.createElement('div');
+                ficha.className = 'ficha';
+                ficha.innerHTML = `
+                    <div class="panel-interno">
+                        <div class="cara cara-dorso"><img src="logo.jpg"></div>
+                        <div class="cara cara-frente">${esVideo ? '<video id="video-fantasma" src="bobo.mp4" muted playsinline></video>' : `<img src="${archivo}">`}</div>
+                    </div>
+                `;
+                ficha.onclick = () => alHacerClick(ficha, archivo, esVideo);
+                tablero.appendChild(ficha);
             });
         }
 
-        function alHacerClick() {
-            if (bloqueoTablero) return;
-            if (this.classList.contains('volteada') || this.classList.contains('bloqueada')) return;
-            if (!juegoIniciado) { iniciarTiempo(); }
-            if (this.dataset.tipo === 'especial') {
-                bloqueoTablero = true;
-                sonidoBobo.currentTime = 0; sonidoBobo.play().catch(e => console.log(e));
-                const video = document.getElementById('video-fantasma');
-                if (video) { video.currentTime = 0; video.play().catch(e => console.log(e)); }
-                this.classList.add('volteada');
-                setTimeout(() => { this.classList.remove('volteada'); if (video) video.pause(); bloqueoTablero = false; }, 2000); 
-                return;
+        function alHacerClick(ficha, archivo, esVideo) {
+            if (bloqueoTablero || ficha.classList.contains('volteada')) return;
+            if (!juegoIniciado) {
+                juegoIniciado = true;
+                new Audio('tictac.mp3').play();
+                intervaloReloj = setInterval(() => {
+                    tiempoRestante--;
+                    document.getElementById('reloj').innerText = `00:${tiempoRestante.toString().padStart(2, '0')}`;
+                    if (tiempoRestante <= 0) {
+                        clearInterval(intervaloReloj);
+                        new Audio('mal.mp3').play();
+                        new Audio('hinchada.mp3').play();
+                        document.getElementById('pantalla-derrota').style.display = 'flex';
+                    }
+                }, 1000);
             }
-            const nombreImagen = this.dataset.archivo;
-            const nombreAudio = nombreImagen.replace('.jpg', '.mp3');
-            const sonidoAsociado = new Audio(nombreAudio);
-            sonidoAsociado.volume = 1.0; 
-            sonidoAsociado.currentTime = 0; sonidoAsociado.play().catch(e => console.log(e));
-            this.classList.add('volteada');
-            fichasVolteadas.push(this);
-            if (fichasVolteadas.length === 2) { comprobarPar(); }
+
+            if (esVideo) {
+                bloqueoTablero = true;
+                new Audio('bobo.mp3').play();
+                document.getElementById('video-fantasma').play();
+                ficha.classList.add('volteada');
+                setTimeout(() => { ficha.classList.remove('volteada'); bloqueoTablero = false; }, 2000);
+            } else {
+                new Audio(archivo.replace('.jpg', '.mp3')).play();
+                ficha.classList.add('volteada');
+                fichasVolteadas.push({ficha, archivo});
+                if (fichasVolteadas.length === 2) {
+                    if (fichasVolteadas[0].archivo === fichasVolteadas[1].archivo) {
+                        fichasVolteadas.forEach(f => f.ficha.classList.add('bloqueada'));
+                        fichasVolteadas = [];
+                    } else {
+                        bloqueoTablero = true;
+                        setTimeout(() => {
+                            fichasVolteadas.forEach(f => f.ficha.classList.remove('volteada'));
+                            fichasVolteadas = [];
+                            bloqueoTablero = false;
+                        }, 1000);
+                    }
+                }
+            }
         }
 
-        function comprobarPar() {
-            const [ficha1, ficha2] = fichasVolteadas;
-            if (ficha1.dataset.archivo === ficha2.dataset.archivo) {
-                ficha1.classList.add('bloqueada'); ficha2.classList.add('bloqueada');
-                fichasVolteadas = [];
-                const normalesPorResolver = document.querySelectorAll('.ficha[data-tipo="normal"]:not(.bloqueada)');
-                if (normalesPorResolver.length === 0) {
-                    clearInterval(intervaloReloj);
-                    sonidoTicTac.pause();
-                    setTimeout(() => alert("¡Felicitaciones! Encontraste todos los pares."), 500);
-                }
-            } else {
-                bloqueoTablero = true;
-                setTimeout(() => { ficha1.classList.remove('volteada'); ficha2.classList.remove('volteada'); fichasVolteadas = []; bloqueoTablero = false; }, 1000);
-            }
+        function reiniciarJuego() {
+            location.reload(); // Recarga la página para limpiar todo fácilmente
         }
     </script>
-
 </body>
 </html>
