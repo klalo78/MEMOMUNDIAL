@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Edición Especial</title>
+    <!-- Librería de íconos para WhatsApp -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -34,26 +35,7 @@
             50% { color: rgba(255, 255, 255, 1); text-shadow: 0 0 10px rgba(255,255,255,0.8); }
         }
 
-        /* PANTALLA DE ENTRADA */
-        #pantalla-entrada {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 10;
-            background-color: rgba(0, 0, 0, 0.4);
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-        }
-
-        .logo-grande img {
-            max-width: 280px;
-            height: auto;
-            margin-bottom: 30px;
-            animation: moviLogo 4s ease-in-out infinite; 
-        }
-
+        /* COMPONENTES GENERALES */
         .btn-general {
             padding: 15px 40px;
             font-size: 1.5rem;
@@ -70,6 +52,35 @@
 
         .btn-general:hover { transform: scale(1.08); background-color: #27ae60; }
 
+        /* PANTALLAS DE FLUJO */
+        .pantalla-completa {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.45);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            color: #ffffff;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .logo-grande img {
+            max-width: 280px;
+            height: auto;
+            margin-bottom: 30px;
+            animation: moviLogo 4s ease-in-out infinite; 
+        }
+
+        /* NUEVA PANTALLA DE PREMIO BLANCA */
+        .pantalla-premio-blanca {
+            background-color: #ffffff !important;
+            color: #2c3e50 !important;
+        }
+
         .bloque-contacto {
             display: flex;
             flex-direction: column;
@@ -78,7 +89,6 @@
             text-decoration: none;
             transition: transform 0.2s;
         }
-
         .bloque-contacto:hover { transform: scale(1.1); }
         .bloque-contacto i { color: #25d366; font-size: 1.8rem; }
         .bloque-contacto span {
@@ -86,6 +96,39 @@
             font-style: italic;
             animation: titilar 2s infinite ease-in-out;
         }
+
+        /* TEXTOS DE PREMIO Y VALIDACIÓN */
+        .texto-premio-entrada {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f1c40f;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            max-width: 340px;
+        }
+
+        .texto-premio-ganado {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #c0392b; /* Color destacado para el fondo blanco */
+            margin-bottom: 15px;
+            max-width: 450px;
+        }
+
+        .texto-instruccion-ganado {
+            font-size: 1.2rem;
+            color: #34495e;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .btn-validar {
+            background-color: #3498db;
+            font-size: 1.2rem;
+            padding: 12px 30px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn-validar:hover { background-color: #2980b9; }
 
         /* ZONA DEL JUEGO */
         #zona-juego {
@@ -165,26 +208,62 @@
             flex-direction: column; align-items: center; justify-content: center;
             border-radius: 12px; color: #ffffff; text-align: center; padding: 20px; box-sizing: border-box;
         }
+        #pantalla-derrota h2 { font-size: 2.2rem; color: #e74c3c; margin-bottom: 10px; }
+        #pantalla-derrota p { font-size: 1.3rem; margin-bottom: 25px; }
     </style>
 </head>
 <body>
 
-    <div id="pantalla-entrada">
+    <!-- 1. PANTALLA DE ENTRADA -->
+    <div id="pantalla-entrada" class="pantalla-completa">
         <div class="logo-grande">
             <img src="logo.png" alt="Logo">
         </div>
         <button class="btn-general" onclick="comenzarExperiencia()">JUGAR</button>
         
+        <!-- ANUNCIO DEL PREMIO EN LA ENTRADA -->
+        <div class="texto-premio-entrada">Premio: ¡10% de descuento en tu hamburguesa XXL!</div>
+
         <a class="bloque-contacto" href="https://wa.me/541149496902" target="_blank" rel="noopener noreferrer">
             <i class="fa-brands fa-whatsapp"></i>
             <span>dise&ntilde;o multimedia</span>
         </a>
     </div>
 
+    <!-- 2. PANTALLA DE PREMIO BLANCA (Al ganar) -->
+    <div id="pantalla-premio" class="pantalla-completa pantalla-premio-blanca" style="display: none;">
+        <div class="texto-premio-ganado">¡Ganaste un 10% de descuento en la compra de una hamburguesa XXL!</div>
+        <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
+        <div class="logo-grande">
+            <!-- Muestra la imagen del comerciante al ganar -->
+            <img src="logocomerciante.jpg" alt="Logo Comercio">
+        </div>
+        <button class="btn-general btn-validar" onclick="ejecutarValidacionDirecta()">VALIDAR PREMIO (solo empleados)</button>
+    </div>
+
+    <!-- 3. PANTALLA DE PREMIO YA VALIDADO (Fondo Blanco) -->
+    <div id="pantalla-validada" class="pantalla-completa pantalla-premio-blanca" style="display: none;">
+        <div class="logo-grande">
+            <img src="logocomerciante.jpg" alt="Logo Comercio">
+        </div>
+        <h2 style="font-size: 2.2rem; color: #2ecc71; margin-bottom: 15px;">Tu premio fue validado.</h2>
+        <p style="font-size: 1.4rem; color: #34495e;">Gracias por participar.</p>
+    </div>
+
+    <!-- 4. PANTALLA DE BLOQUEO (Si ya jugó ese día) -->
+    <div id="pantalla-bloqueo" class="pantalla-completa" style="display: none;">
+        <div class="logo-grande">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <h2 style="font-size: 2rem; color: #e67e22; margin-bottom: 15px;">Ya participaste por hoy.</h2>
+        <p style="font-size: 1.2rem;">¡Muchas gracias por visitarnos!</p>
+    </div>
+
+    <!-- 5. INTERFAZ DEL TABLERO DE JUEGO -->
     <div id="zona-juego">
         <div class="header-juego">
             <div class="logo-contenedor">
-                <img src="logo.png" alt="Logo">
+                <img src="logo.png" alt="Logo Animado">
             </div>
             <div class="temporizador" id="reloj">00:40</div>
         </div>
@@ -221,6 +300,16 @@
         const sonidoHinchada = new Audio('hinchada.mp3');
         sonidoHinchada.loop = true; 
         const sonidoMal = new Audio('mal.mp3');
+
+        window.onload = function() {
+            const fechaHoy = new Date().toDateString();
+            const ultimoRegistro = localStorage.getItem('premioValidadoFecha');
+            
+            if (ultimoRegistro === fechaHoy) {
+                document.getElementById('pantalla-entrada').style.display = 'none';
+                document.getElementById('pantalla-bloqueo').style.display = 'flex';
+            }
+        };
 
         function comenzarExperiencia() {
             const elem = document.documentElement;
@@ -342,18 +431,28 @@
             if (ficha1.dataset.archivo === ficha2.dataset.archivo) {
                 ficha1.classList.add('bloqueada'); ficha2.classList.add('bloqueada');
                 fichasVolteadas = [];
-                
-                // CORRECCIÓN AQUÍ: Verificamos si ganó antes de que el reloj siga corriendo
                 const normalesPorResolver = document.querySelectorAll('.ficha[data-tipo="normal"]:not(.bloqueada)');
                 if (normalesPorResolver.length === 0) {
-                    clearInterval(intervaloReloj); // DETIENE EL RELOJ INMEDIATAMENTE
-                    sonidoTicTac.pause();          // Pausa el sonido del tictac
-                    setTimeout(() => alert("¡Felicitaciones! Encontraste todos los pares."), 100);
+                    clearInterval(intervaloReloj); 
+                    sonidoTicTac.pause();
+                    
+                    setTimeout(() => {
+                        document.getElementById('zona-juego').style.display = 'none';
+                        document.getElementById('pantalla-premio').style.display = 'flex';
+                    }, 500);
                 }
             } else {
                 bloqueoTablero = true;
                 setTimeout(() => { ficha1.classList.remove('volteada'); ficha2.classList.remove('volteada'); fichasVolteadas = []; bloqueoTablero = false; }, 1000);
             }
+        }
+
+        function ejecutarValidacionDirecta() {
+            const fechaHoy = new Date().toDateString();
+            localStorage.setItem('premioValidadoFecha', fechaHoy);
+            
+            document.getElementById('pantalla-premio').style.display = 'none';
+            document.getElementById('pantalla-validada').style.display = 'flex';
         }
     </script>
 </body>
