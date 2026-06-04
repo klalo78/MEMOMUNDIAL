@@ -47,7 +47,7 @@
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
             transition: transform 0.2s, background-color 0.2s;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .btn-general:hover { transform: scale(1.08); background-color: #27ae60; }
@@ -75,7 +75,6 @@
             animation: moviLogo 4s ease-in-out infinite; 
         }
 
-        /* NUEVA PANTALLA DE PREMIO BLANCA */
         .pantalla-premio-blanca {
             background-color: #ffffff !important;
             color: #2c3e50 !important;
@@ -88,6 +87,7 @@
             gap: 5px;
             text-decoration: none;
             transition: transform 0.2s;
+            margin-top: 15px;
         }
         .bloque-contacto:hover { transform: scale(1.1); }
         .bloque-contacto i { color: #25d366; font-size: 1.8rem; }
@@ -97,20 +97,48 @@
             animation: titilar 2s infinite ease-in-out;
         }
 
-        /* TEXTOS DE PREMIO Y VALIDACIÓN */
-        .texto-premio-entrada {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #f1c40f;
-            margin-bottom: 25px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        /* CONTENEDOR DEL PREMIO CON FILETE DE BANDERA ARGENTINA */
+        .contenedor-premio-argentino {
+            background-color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             max-width: 340px;
+            margin-bottom: 25px;
+            box-sizing: border-box;
+            /* Diseño de filete simulando la bandera en los bordes horizontalmente */
+            border-top: 4px solid #74acdf;
+            border-bottom: 4px solid #74acdf;
+            position: relative;
         }
 
+        /* Línea blanca del medio para la bandera en los bordes */
+        .contenedor-premio-argentino::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background-color: #ffffff;
+        }
+        .contenedor-premio-argentino::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 2px;
+            background-color: #ffffff;
+        }
+
+        .texto-premio-entrada {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #000000; /* Texto en negro para máxima legibilidad */
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* TEXTOS DE PREMIO GANADO */
         .texto-premio-ganado {
             font-size: 1.8rem;
             font-weight: bold;
-            color: #c0392b; /* Color destacado para el fondo blanco */
+            color: #c0392b; 
             margin-bottom: 15px;
             max-width: 450px;
         }
@@ -221,8 +249,10 @@
         </div>
         <button class="btn-general" onclick="comenzarExperiencia()">JUGAR</button>
         
-        <!-- ANUNCIO DEL PREMIO EN LA ENTRADA -->
-        <div class="texto-premio-entrada">Premio: ¡10% de descuento en tu hamburguesa XXL!</div>
+        <!-- RECTÁNGULO DE PREMIO CON DISEÑO ARGENTINO -->
+        <div class="contenedor-premio-argentino">
+            <p class="texto-premio-entrada">Premio: &iexcl;10% de descuento en tu hamburguesa XXL&excl;</p>
+        </div>
 
         <a class="bloque-contacto" href="https://wa.me/541149496902" target="_blank" rel="noopener noreferrer">
             <i class="fa-brands fa-whatsapp"></i>
@@ -232,10 +262,9 @@
 
     <!-- 2. PANTALLA DE PREMIO BLANCA (Al ganar) -->
     <div id="pantalla-premio" class="pantalla-completa pantalla-premio-blanca" style="display: none;">
-        <div class="texto-premio-ganado">¡Ganaste un 10% de descuento en la compra de una hamburguesa XXL!</div>
+        <div class="texto-premio-ganado">&iexcl;Ganaste un 10% de descuento en la compra de una hamburguesa XXL&excl;</div>
         <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
         <div class="logo-grande">
-            <!-- Muestra la imagen del comerciante al ganar -->
             <img src="logocomerciante.jpg" alt="Logo Comercio">
         </div>
         <button class="btn-general btn-validar" onclick="ejecutarValidacionDirecta()">VALIDAR PREMIO (solo empleados)</button>
@@ -256,7 +285,7 @@
             <img src="logo.png" alt="Logo">
         </div>
         <h2 style="font-size: 2rem; color: #e67e22; margin-bottom: 15px;">Ya participaste por hoy.</h2>
-        <p style="font-size: 1.2rem;">¡Muchas gracias por visitarnos!</p>
+        <p style="font-size: 1.2rem;">&iexcl;Muchas gracias por visitarnos&excl;</p>
     </div>
 
     <!-- 5. INTERFAZ DEL TABLERO DE JUEGO -->
