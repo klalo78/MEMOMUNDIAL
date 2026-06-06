@@ -37,7 +37,7 @@
 
         @keyframes pulsoValidar {
             0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); background-color: #3498db; }
-            50% { transform: scale(1.05); box-shadow: 0 8px 25 rgba(52, 152, 219, 0.8); background-color: #2980b9; }
+            50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(52, 152, 219, 0.8); background-color: #2980b9; }
         }
 
         /* COMPONENTES GENERALES */
@@ -80,9 +80,9 @@
             animation: moviLogo 4s ease-in-out infinite; 
         }
 
-        /* NUEVAS PANTALLAS CON FONDO.JPG Y MARCO PATRIO PERIMETRAL */
-        .pantalla-con-fondo-comercio {
-            background-image: url('fondo.jpg') !important;
+        /* PROBANDO: Pantallas con el fondo limpio back.png sin contenedores extra */
+        .pantalla-limpia-back {
+            background-image: url('back.png') !important;
             background-size: cover;
             background-position: center;
             border-top: 15px solid #74acdf;
@@ -92,19 +92,6 @@
             box-shadow: inset 0 0 0 4px #74acdf;
         }
 
-        /* Contenedor interno semi-transparente para asegurar legibilidad sobre fondo.jpg */
-        .bloque-legibilidad {
-            background-color: rgba(255, 255, 255, 0.92);
-            padding: 20px 25px;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 500px;
-            box-sizing: border-box;
-        }
-
-        /* Se eliminó por completo el sombreado a messi.jpg */
         .imagen-messi {
             max-width: 220px;
             height: auto;
@@ -141,6 +128,17 @@
             border-bottom: 5px solid #74acdf;
         }
 
+        /* NUEVO: Contenedor destacado blanco para el bloqueo de pantalla */
+        .contenedor-bloqueo-blanco {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+            max-width: 400px;
+            box-sizing: border-box;
+            border: 4px solid #e67e22;
+        }
+
         .texto-premio-entrada {
             font-size: 1.25rem;
             font-weight: bold;
@@ -150,18 +148,21 @@
         }
 
         .texto-premio-ganado {
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             font-weight: bold;
-            color: #c0392b; 
-            margin-bottom: 12px;
+            color: #ffffff; /* Blanco para resaltar directo sobre back.png */
+            margin-bottom: 15px;
+            max-width: 480px;
             line-height: 1.3;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         .texto-instruccion-ganado {
-            font-size: 1.1rem;
-            color: #34495e;
-            margin-bottom: 20px;
+            font-size: 1.25rem;
+            color: #ffffff; /* Blanco para resaltar directo sobre back.png */
+            margin-bottom: 25px;
             font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
         .btn-validar {
@@ -172,14 +173,14 @@
         }
 
         .btn-salir {
-            background-color: #3498db;
+            background-color: #2ecc71;
             font-size: 1.2rem;
             padding: 12px 35px;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
             margin-top: 20px;
             margin-bottom: 0;
         }
-        .btn-salir:hover { background-color: #2980b9; transform: scale(1.05); }
+        .btn-salir:hover { background-color: #27ae60; transform: scale(1.05); }
 
         /* ZONA DEL JUEGO */
         #zona-juego {
@@ -282,42 +283,40 @@
         </a>
     </div>
 
-    <!-- 2. PANTALLA DE PREMIO (Al ganar - Con fondo.jpg) -->
-    <div id="pantalla-premio" class="pantalla-completa pantalla-con-fondo-comercio" style="display: none;">
-        <div class="bloque-legibilidad">
-            <img src="messi.jpg" class="imagen-messi" alt="Messi Campeon">
-            
-            <div class="texto-premio-ganado">&iexcl;Felicitaciones&excl; Ganaste un 10&percnt; de descuento exclusivo en tu Combo de Hamburguesa XXL con papas fritas y bebida.</div>
-            <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
-            
-            <div class="logo-grande" style="margin-bottom: 15px;">
-                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 130px;">
-            </div>
-            
-            <button class="btn-general btn-validar" onclick="ejecutarValidacionDirecta()">VALIDAR PREMIO (solo empleados)</button>
+    <!-- 2. PANTALLA DE PREMIO (Al ganar - Directo sobre back.png sin contenedores extra) -->
+    <div id="pantalla-premio" class="pantalla-completa pantalla-limpia-back" style="display: none;">
+        <img src="messi.jpg" class="imagen-messi" alt="Messi Campeon">
+        
+        <div class="texto-premio-ganado">&iexcl;Felicitaciones&excl; Ganaste un 10&percnt; de descuento exclusivo en tu Combo de Hamburguesa XXL con papas fritas y bebida.</div>
+        <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
+        
+        <div class="logo-grande" style="margin-bottom: 15px;">
+            <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 130px;">
         </div>
+        
+        <button class="btn-general btn-validar" onclick="ejecutarValidacionDirecta()">VALIDAR PREMIO (solo empleados)</button>
     </div>
 
-    <!-- 3. PANTALLA DE PREMIO YA VALIDADO (Con fondo.jpg y botón Salir) -->
-    <div id="pantarma-validada" class="pantalla-completa pantalla-con-fondo-comercio" style="display: none;">
-        <div class="bloque-legibilidad">
-            <div class="logo-grande">
-                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 160px;">
-            </div>
-            <h2 style="font-size: 2.2rem; color: #2ecc71; margin-bottom: 12px; margin-top: 0;">Tu premio fue validado.</h2>
-            <p style="font-size: 1.3rem; color: #34495e; margin-bottom: 5px; font-weight: bold;">Gracias por participar.</p>
-            
-            <button class="btn-general btn-salir" onclick="window.location.href='https://www.google.com'">salir del juego</button>
-        </div>
-    </div>
-
-    <!-- 4. PANTALLA DE BLOQUEO -->
-    <div id="pantalla-bloqueo" class="pantalla-completa" style="display: none;">
+    <!-- 3. PANTALLA DE PREMIO YA VALIDADO (Directo sobre back.png sin contenedores extra) -->
+    <div id="pantarma-validada" class="pantalla-completa pantalla-limpia-back" style="display: none;">
         <div class="logo-grande">
-            <img src="logo.png" alt="Logo">
+            <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 160px;">
         </div>
-        <h2 style="font-size: 2rem; color: #e67e22; margin-bottom: 15px;">Ya participaste por hoy.</h2>
-        <p style="font-size: 1.2rem;">&iexcl;Muchas gracias por visitarnos&excl;</p>
+        <h2 style="font-size: 2.3rem; color: #2ecc71; margin-bottom: 12px; margin-top: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Tu premio fue validado.</h2>
+        <p style="font-size: 1.4rem; color: #ffffff; margin-bottom: 10px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">Gracias por participar.</p>
+        
+        <button class="btn-general btn-salir" onclick="window.location.href='https://www.google.com'">salir del juego</button>
+    </div>
+
+    <!-- 4. PANTALLA DE BLOQUEO (MODIFICADA: Cuadrado blanco destacado, texto negro bold) -->
+    <div id="pantalla-bloqueo" class="pantalla-completa">
+        <div class="contenedor-bloqueo-blanco">
+            <div class="logo-grande" style="margin-bottom: 15px;">
+                <img src="logo.png" alt="Logo" style="max-width: 180px;">
+            </div>
+            <h2 style="font-size: 2.1rem; color: #e67e22; margin-bottom: 15px; font-weight: bold;">Ya participaste por hoy.</h2>
+            <p style="font-size: 1.25rem; color: #000000; font-weight: bold; margin: 0; line-height: 1.4;">&iexcl;Muchas gracias por visitarnos&excl;</p>
+        </div>
     </div>
 
     <!-- 5. INTERFAZ DEL TABLERO DE JUEGO -->
@@ -339,7 +338,6 @@
     </div>
 
     <script>
-        // ACTUALIZADO: Se agregaron los jugadores 13, 14 y 15 al banco de datos
         const bancoJugadores = [
             '01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg',
             '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg',
@@ -371,6 +369,9 @@
             if (ultimoRegistro === fechaHoy) {
                 document.getElementById('pantalla-entrada').style.display = 'none';
                 document.getElementById('pantalla-bloqueo').style.display = 'flex';
+            } else {
+                // Si no ha jugado hoy, ocultamos la pantalla de bloqueo para dejar ver el inicio
+                document.getElementById('pantalla-bloqueo').style.display = 'none';
             }
         };
 
