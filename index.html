@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Edición Especial</title>
+    <!-- Librería de íconos para WhatsApp -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -92,7 +93,7 @@
             flex-direction: column;
             align-items: center;
             
-            /* TRIPLE FILETE PERIMETRAL: Celeste (borde) -> Blanco (outline interno) -> Celeste (inset) */
+            /* TRIPLE FILETE PERIMETRAL */
             border: 6px solid #74acdf;
             outline: 4px solid #ffffff;
             outline-offset: -10px;
@@ -261,6 +262,7 @@
 </head>
 <body>
 
+    <!-- 1. PANTALLA DE ENTRADA -->
     <div id="pantalla-entrada" class="pantalla-completa">
         <div class="logo-grande">
             <img src="logo.png" alt="Logo">
@@ -277,7 +279,8 @@
         </a>
     </div>
 
-    <div id="pantalla-premio" class="pantalla-completa">
+    <!-- 2. PANTALLA DE PREMIO (Al ganar) -->
+    <div id="pantalla-premio" class="pantalla-completa" style="display: none;">
         <div class="contenedor-blanco-patrio">
             <img src="messi.jpg" class="imagen-messi" alt="Messi Campeon">
             
@@ -285,14 +288,15 @@
             <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
             
             <div class="logo-grande" style="margin-bottom: 15px;">
-                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 130px;">
+                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 140px;">
             </div>
             
             <button class="btn-general btn-validar" onclick="ejecutarValidacionDirecta()">VALIDAR PREMIO (solo empleados)</button>
         </div>
     </div>
 
-    <div id="pantarma-validada" class="pantalla-completa">
+    <!-- 3. PANTALLA DE PREMIO YA VALIDADO -->
+    <div id="pantarma-validada" class="pantalla-completa" style="display: none;">
         <div class="contenedor-blanco-patrio">
             <div class="logo-grande">
                 <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 160px;">
@@ -304,6 +308,7 @@
         </div>
     </div>
 
+    <!-- 4. PANTALLA DE BLOQUEO -->
     <div id="pantalla-bloqueo" class="pantalla-completa" style="display: none;">
         <div class="contenedor-blanco-patrio">
             <div class="logo-grande" style="margin-bottom: 15px;">
@@ -314,6 +319,7 @@
         </div>
     </div>
 
+    <!-- 5. INTERFAZ DEL TABLERO DE JUEGO -->
     <div id="zona-juego">
         <div class="header-juego">
             <div class="logo-contenedor">
@@ -356,13 +362,24 @@
         sonidoHinchada.loop = true; 
         const sonidoMal = new Audio('mal.mp3');
 
+        // RE-BLINDADO: Control estricto de apagado y encendido de capas al arrancar
         window.onload = function() {
+            // Aseguramos que las pantallas de premio y validación arranquen 100% apagadas de base
+            document.getElementById('pantalla-premio').style.display = 'none';
+            document.getElementById('pantarma-validada').style.display = 'none';
+            document.getElementById('zona-juego').style.display = 'none';
+
             const fechaHoy = new Date().toDateString();
             const ultimoRegistro = localStorage.getItem('premioValidadoFecha');
             
             if (ultimoRegistro === fechaHoy) {
+                // Si ya jugó: apaga la entrada y prende SÓLO el bloqueo
                 document.getElementById('pantalla-entrada').style.display = 'none';
                 document.getElementById('pantalla-bloqueo').style.display = 'flex';
+            } else {
+                // Si no jugó: apaga el bloqueo y prende SÓLO la entrada limpia
+                document.getElementById('pantalla-bloqueo').style.display = 'none';
+                document.getElementById('pantalla-entrada').style.display = 'flex';
             }
         };
 
