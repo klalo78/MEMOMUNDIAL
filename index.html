@@ -137,7 +137,7 @@
         }
 
         .texto-premio-entrada {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #000000; 
             margin: 0;
@@ -145,7 +145,7 @@
         }
 
         .texto-premio-ganado {
-            font-size: 1.6rem;
+            font-size: 1.55rem;
             font-weight: bold;
             color: #c0392b; 
             margin-bottom: 12px;
@@ -167,12 +167,30 @@
             color: #ffffff !important;
         }
 
+        /* Botón azul para descargar el cupón */
+        .btn-descargar {
+            background-color: #3498db;
+            font-size: 1.25rem;
+            padding: 12px 35px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-descargar:hover { background-color: #2980b9; transform: scale(1.05); }
+
         .btn-salir {
             background-color: #2ecc71;
             font-size: 1.2rem;
             padding: 12px 35px;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-            margin-top: 20px;
+            margin-top: 5px;
             margin-bottom: 0;
             color: #ffffff !important;
         }
@@ -269,8 +287,9 @@
         </div>
         <button class="btn-general" onclick="comenzarExperiencia()">JUGAR</button>
         
+        <!-- NUEVO TEXTO CARNE PICADA EN LA ENTRADA -->
         <div class="contenedor-premio-argentino">
-            <p class="texto-premio-entrada">Premio: &iexcl;10&percnt; de descuento en tu hamburguesa XXL&excl;</p>
+            <p class="texto-premio-entrada">CON LA COMPRA DE $50.000 TE LLEVAS GRATIS!!! 1/2Kg. de CARNE PICADA.</p>
         </div>
 
         <a class="bloque-contacto" href="https://wa.me/541149496902" target="_blank" rel="noopener noreferrer">
@@ -284,7 +303,8 @@
         <div class="contenedor-blanco-patrio">
             <img src="messi.jpg" class="imagen-messi" alt="Messi Campeon">
             
-            <div class="texto-premio-ganado">&iexcl;Felicitaciones&excl; Ganaste un 10&percnt; de descuento exclusivo en tu Combo de Hamburguesa XXL con papas fritas y bebida.</div>
+            <!-- NUEVO TEXTO CARNE PICADA AL GANAR -->
+            <div class="texto-premio-ganado">&iexcl;Felicitaciones&excl; CON LA COMPRA DE $50.000 TE LLEVAS GRATIS!!! 1/2Kg. de CARNE PICADA.</div>
             <div class="texto-instruccion-ganado">Busca a un empleado para que valide tu premio.</div>
             
             <div class="logo-grande" style="margin-bottom: 15px;">
@@ -295,15 +315,21 @@
         </div>
     </div>
 
-    <!-- 3. PANTALLA DE PREMIO YA VALIDADO -->
+    <!-- 3. PANTALLA DE PREMIO YA VALIDADO (Modificada con descarga de cupon.jpg) -->
     <div id="pantarma-validada" class="pantalla-completa" style="display: none;">
         <div class="contenedor-blanco-patrio">
             <div class="logo-grande">
-                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 160px;">
+                <img src="logocomercio.jpg" alt="Logo Comercio" style="max-width: 150px;">
             </div>
-            <h2 style="font-size: 2.2rem; color: #2ecc71; margin-bottom: 12px; margin-top: 0; font-weight: bold;">Tu premio fue validado.</h2>
-            <p style="font-size: 1.3rem; color: #34495e; margin-bottom: 5px; font-weight: bold;">Gracias por participar.</p>
+            <h2 style="font-size: 2.1rem; color: #2ecc71; margin-bottom: 12px; margin-top: 0; font-weight: bold;">Tu premio fue validado.</h2>
             
+            <!-- Nueva instrucción solicitada -->
+            <p style="font-size: 1.2rem; color: #34495e; margin-bottom: 10px; font-weight: bold; line-height: 1.4;">podes usar el beneficio ahora o descargar el cupon para usarlo mas tarde</p>
+            
+            <!-- Botón para descargar el archivo cupon.jpg -->
+            <a href="cupon.jpg" download="cupon.jpg" class="btn-descargar">DESCARGAR CUPÓN</a>
+            
+            <!-- Botón Salir -->
             <button class="btn-general btn-salir" onclick="window.location.href='https://www.google.com'">salir del juego</button>
         </div>
     </div>
@@ -362,9 +388,7 @@
         sonidoHinchada.loop = true; 
         const sonidoMal = new Audio('mal.mp3');
 
-        // RE-BLINDADO: Control estricto de apagado y encendido de capas al arrancar
         window.onload = function() {
-            // Aseguramos que las pantallas de premio y validación arranquen 100% apagadas de base
             document.getElementById('pantalla-premio').style.display = 'none';
             document.getElementById('pantarma-validada').style.display = 'none';
             document.getElementById('zona-juego').style.display = 'none';
@@ -373,11 +397,9 @@
             const ultimoRegistro = localStorage.getItem('premioValidadoFecha');
             
             if (ultimoRegistro === fechaHoy) {
-                // Si ya jugó: apaga la entrada y prende SÓLO el bloqueo
                 document.getElementById('pantalla-entrada').style.display = 'none';
                 document.getElementById('pantalla-bloqueo').style.display = 'flex';
             } else {
-                // Si no jugó: apaga el bloqueo y prende SÓLO la entrada limpia
                 document.getElementById('pantalla-bloqueo').style.display = 'none';
                 document.getElementById('pantalla-entrada').style.display = 'flex';
             }
